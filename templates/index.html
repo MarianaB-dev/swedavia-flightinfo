@@ -21,8 +21,15 @@
     </header>
 
     <nav class="main-nav">
-        <a href="#" class="active">Arrivals</a>
-        <a href="#">Departures</a>
+        <a href="{{ url_for('home', type='A') }}"
+            class="{{ 'active' if flight_type == 'A' else '' }}">
+            Arrivals
+        </a>
+
+        <a href="{{ url_for('home', type='D') }}"
+            class="{{ 'active' if flight_type == 'D' else '' }}">
+            Departures
+        </a>
     </nav>
 
     <main>
@@ -31,7 +38,7 @@
         <section class="flight-panel">
 
             <div class="table-heading">
-                <h3>Arriving Flights</h3>
+                <h3>{{ 'Arriving Flights' if flight_type == 'A' else 'Departing Flights' }}</h3>
                 <span>LIVE DATA</span>
             </div>
 
@@ -40,7 +47,7 @@
                     <tr>
                         <th>Time</th>
                         <th>Flight</th>
-                        <th>From</th>
+                        <th>{{ 'From' if flight_type == 'A' else 'To' }}</th>
                         <th>Airline</th>
                         <th>Status</th>
                     </tr>
@@ -48,38 +55,24 @@
 
                 <tbody>
                     {% for flight in flights %}
-                        {% set details = flight.get('arrival', {}) %}
+                        {% set details = flight.get('arrival' if flight_type == 'A' else 'departure', {}) %}
                         {% set airline = details.get('airlineOperator', {}) %}
-                        {% set arrival_time = details.get('arrivalTime', {}) %}
+                        {% set time_key = 'arrivalTime' if flight_type == 'A' else 'departureTime' %}
+                        {% set flight_time = details.get(time_key, {}) %}
                         {% set status = details.get('locationAndStatus', {}) %}
+                        {% set airport_key = 'departureAirportEnglish' if flight_type == 'A' else 'arrivalAirportEnglish' %}
 
                         <tr>
-                            <td>
-                                {{ arrival_time.get('scheduledUtc', 'N/A') }}
-                            </td>
-
-                            <td>
-                                {{ details.get('flightId', 'N/A') }}
-                            </td>
-
-                            <td>
-                                {{ details.get('departureAirportEnglish', 'Unknown') }}
-                            </td>
-
-                            <td>
-                                {{ airline.get('name', 'Unknown') }}
-                            </td>
-
-                            <td>
-                                {{ status.get('flightLegStatusEnglish', 'Unknown') }}
-                            </td>
+                            <td>{{ flight_time.get('scheduledLocal', 'N/A') }}</td>
+                            <td>{{ details.get('flightId', 'N/A') }}</td>
+                            <td>{{ details.get(airport_key, 'Unknown') }}</td>
+                            <td>{{ airline.get('name', 'Unknown') }}</td>
+                            <td>{{ status.get('flightLegStatusEnglish', 'Unknown') }}</td>
                         </tr>
 
                     {% else %}
                         <tr>
-                            <td colspan="5">
-                                No flight information available.
-                            </td>
+                            <td colspan="5">No flight information available.</td>
                         </tr>
                     {% endfor %}
                 </tbody>
