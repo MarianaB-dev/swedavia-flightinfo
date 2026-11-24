@@ -31,7 +31,32 @@
             Departures
         </a>
     </nav>
+    
+    <div class="search-container">
+        <form action="{{ url_for('home') }}" method="GET">
+            <input
+                type="hidden"
+                name="type"
+                value="{{ flight_type }}"
+            >
 
+            <input
+                type="text"
+                name="flight"
+                placeholder="Enter flight number (e.g. AY808)"
+                value="{{ search_query }}"
+            >
+
+            <button type="submit">Search</button>
+
+            {% if search_query %}
+                <a href="{{ url_for('home', type=flight_type) }}">
+                    Clear
+                </a>
+            {% endif %}
+        </form>
+    </div>
+    
     <main>
         <h2>Flight Information</h2>
 
@@ -67,7 +92,23 @@
                             <td>{{ details.get('flightId', 'N/A') }}</td>
                             <td>{{ details.get(airport_key, 'Unknown') }}</td>
                             <td>{{ airline.get('name', 'Unknown') }}</td>
-                            <td>{{ status.get('flightLegStatusEnglish', 'Unknown') }}</td>
+                            
+                            {% set status_text = status.get('flightLegStatusEnglish', 'Unknown') %}
+                            {% set status_lower = status_text.lower() %}
+
+                            {% if status_lower.startswith('landed') or status_lower.startswith('departed') %}
+                                {% set status_class = 'status-completed' %}
+                            {% elif status_lower.startswith('scheduled') %}
+                                {% set status_class = 'status-scheduled' %}
+                            {% elif status_lower.startswith('cancelled') %}
+                                {% set status_class = 'status-cancelled' %}
+                            {% elif status_lower.startswith('deleted') %}
+                                {% set status_class = 'status-deleted' %}
+                            {% else %}
+                                {% set status_class = 'status-unknown' %}
+                            {% endif %}
+
+                            <td class="{{ status_class }}">{{ status_text }}</td>
                         </tr>
 
                     {% else %}

@@ -205,3 +205,104 @@ main h2 {
     background-color: #60451a;
     color: #ffd477;
 }
+
+/* Flight search */
+
+.search-container {
+    padding: 20px 40px;
+    background-color: #101820;
+}
+
+.search-container form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.search-container input[type="text"] {
+    width: 280px;
+    padding: 12px 15px;
+    background-color: #1b2b38;
+    border: 1px solid #344957;
+    border-radius: 5px;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.search-container input[type="text"]::placeholder {
+    color: #8999a5;
+}
+
+.search-container input[type="text"]:focus {
+    outline: none;
+    border-color: #f5b400;
+}
+
+.search-container button {
+    padding: 12px 22px;
+    background-color: #f5b400;
+    color: #101820;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.search-container button:hover {
+    background-color: #ffd04a;
+}
+
+.search-container a {
+    color: #f5b400;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px;
+}
+
+.search-container a:hover {
+    color: #ffffff;
+}
+
+/* Responsive search layout */
+
+@media (max-width: 600px) {
+    .search-container {
+        padding: 20px;
+    }
+
+    .search-container input[type="text"] {
+        width: 100%;
+    }
+
+    .search-container form {
+        align-items: stretch;
+    }
+}
+
+/* Flight status colors */
+
+.flight-table td.status-completed {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+.flight-table td.status-scheduled {
+    color: #60a5fa;
+    font-weight: bold;
+}
+
+.flight-table td.status-cancelled {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+.flight-table td.status-deleted {
+    color: #9ca3af;
+    font-weight: bold;
+}
+
+.flight-table td.status-unknown {
+    color: #f5b400;
+    font-weight: bold;
+}

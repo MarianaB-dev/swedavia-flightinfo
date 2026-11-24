@@ -12,6 +12,7 @@ app = Flask(__name__)
 def home():
 
     flight_type = request.args.get("type", "A")
+    search_query = request.args.get("flight", "").strip().upper()
 
     if flight_type not in ["A", "D"]:
         flight_type = "A"
@@ -20,7 +21,8 @@ def home():
         # Get flights from Stockholm Arlanda
         data = get_flights(
             airport="ARN",
-            flight_type=flight_type
+            flight_type=flight_type,
+            flight_id=search_query if search_query else None
         )
 
         flights = data.get("flights", [])
@@ -58,6 +60,23 @@ def home():
             else:
                 flight_time["scheduledLocal"] = "N/A"
 
+        # Sort flights by scheduled UTC time
+        def get_scheduled_time(flight):
+            details = flight.get(
+                "arrival" if flight_type == "A" else "departure",
+                {}
+            )
+
+            time_key = (
+                "arrivalTime" if flight_type == "A"
+                else "departureTime"
+            )
+
+            flight_time = details.get(time_key, {})
+            return flight_time.get("scheduledUtc") or "9999"
+
+        flights.sort(key=get_scheduled_time)
+        
         error = None
 
     except Exception as e:
@@ -68,6 +87,7 @@ def home():
         "index.html",
         flights=flights,
         flight_type=flight_type,
+        search_query=search_query,
         error=error
     )
 
