@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swedavia FlightInfo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <header class="site-header">
+
+        <div class="logo">
+            <h1>SWEDAVIA</h1>
+            <span>FLIGHT INFORMATION</span>
+        </div>
+
+        <div class="airport-info">
+            <span>SWEDEN</span>
+            <h2>Stockholm Arlanda Airport</h2>
+        </div>
+
+    </header>
+
+    <nav class="main-nav">
+        <a href="#" class="active">Arrivals</a>
+        <a href="#">Departures</a>
+    </nav>
+
+    <main>
+        <h2>Flight Information</h2>
+
+        <section class="flight-panel">
+
+    <div class="table-heading">
+        <h3>Arriving Flights</h3>
+        <span>DEMO DATA</span>
+    </div>
+
+    <table class="flight-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Flight</th>
+                <th>From</th>
+                <th>Airline</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>14:25</td>
+                <td>SK 1420</td>
+                <td>Copenhagen</td>
+                <td>SAS</td>
+                <td><span class="status-landed">Landed</span></td>
+            </tr>
+
+            <tr>
+                <td>14:40</td>
+                <td>DY 805</td>
+                <td>Oslo</td>
+                <td>Norwegian</td>
+                <td><span class="status-ontime">On time</span></td>
+            </tr>
+
+            <tr>
+                <td>15:10</td>
+                <td>LH 2414</td>
+                <td>Munich</td>
+                <td>Lufthansa</td>
+                <td><span class="status-delayed">Delayed</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+</section>
+    </main>
+
+    <footer>
+        <p>Swedavia FlightInfo — Educational Project</p>
+    </footer>
+
+</body>
+</html>
