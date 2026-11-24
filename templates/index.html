@@ -31,7 +31,7 @@
             Departures
         </a>
     </nav>
-    
+
     <div class="search-container">
         <form action="{{ url_for('home') }}" method="GET">
             <input
@@ -56,7 +56,7 @@
             {% endif %}
         </form>
     </div>
-    
+
     <main>
         <h2>Flight Information</h2>
 
@@ -92,7 +92,7 @@
                             <td>{{ details.get('flightId', 'N/A') }}</td>
                             <td>{{ details.get(airport_key, 'Unknown') }}</td>
                             <td>{{ airline.get('name', 'Unknown') }}</td>
-                            
+
                             {% set status_text = status.get('flightLegStatusEnglish', 'Unknown') %}
                             {% set status_lower = status_text.lower() %}
 
@@ -118,6 +118,34 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            {% if total_flights > 0 %}
+                <div class="pagination">
+
+                    <span class="pagination-info">
+                        Showing {{ (page - 1) * 20 + 1 }}–{{ [page * 20, total_flights] | min }}
+                        of {{ total_flights }} flights
+                    </span>
+
+                    <div class="pagination-buttons">
+
+                        {% if page > 1 %}
+                            <a href="{{ url_for('home', type=flight_type, flight=search_query, page=page-1) }}">
+                                Previous
+                            </a>
+                        {% endif %}
+
+                        <span>Page {{ page }} of {{ total_pages }}</span>
+
+                        {% if page < total_pages %}
+                            <a href="{{ url_for('home', type=flight_type, flight=search_query, page=page+1) }}">
+                                Next
+                            </a>
+                        {% endif %}
+
+                    </div>
+                </div>
+            {% endif %}
 
         </section>
     </main>

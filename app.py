@@ -7,12 +7,17 @@ from services.swedavia_api import get_flights
 
 app = Flask(__name__)
 
+PER_PAGE = 20
+
 
 @app.route("/")
 def home():
 
     flight_type = request.args.get("type", "A")
     search_query = request.args.get("flight", "").strip().upper()
+    
+    page = request.args.get("page", 1, type=int)
+    page = max(page, 1)
 
     if flight_type not in ["A", "D"]:
         flight_type = "A"
@@ -77,6 +82,16 @@ def home():
 
         flights.sort(key=get_scheduled_time)
         
+        total_flights = len(flights)
+        total_pages = (total_flights + PER_PAGE - 1) // PER_PAGE
+
+        page = min(page, max(total_pages, 1))
+
+        start = (page - 1) * PER_PAGE
+        end = start + PER_PAGE
+
+        flights = flights[start:end]
+        
         error = None
 
     except Exception as e:
@@ -88,7 +103,10 @@ def home():
         flights=flights,
         flight_type=flight_type,
         search_query=search_query,
-        error=error
+        error=error,
+        page=page,
+        total_pages=total_pages,
+        total_flights=total_flights
     )
 
 
