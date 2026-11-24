@@ -9,7 +9,6 @@
 <body>
 
     <header class="site-header">
-
         <div class="logo">
             <h1>SWEDAVIA</h1>
             <span>FLIGHT INFORMATION</span>
@@ -19,7 +18,6 @@
             <span>SWEDEN</span>
             <h2>Stockholm Arlanda Airport</h2>
         </div>
-
     </header>
 
     <nav class="main-nav">
@@ -32,50 +30,62 @@
 
         <section class="flight-panel">
 
-    <div class="table-heading">
-        <h3>Arriving Flights</h3>
-        <span>DEMO DATA</span>
-    </div>
+            <div class="table-heading">
+                <h3>Arriving Flights</h3>
+                <span>LIVE DATA</span>
+            </div>
 
-    <table class="flight-table">
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Flight</th>
-                <th>From</th>
-                <th>Airline</th>
-                <th>Status</th>
-            </tr>
-        </thead>
+            <table class="flight-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Flight</th>
+                        <th>From</th>
+                        <th>Airline</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
 
-        <tbody>
-            <tr>
-                <td>14:25</td>
-                <td>SK 1420</td>
-                <td>Copenhagen</td>
-                <td>SAS</td>
-                <td><span class="status-landed">Landed</span></td>
-            </tr>
+                <tbody>
+                    {% for flight in flights %}
+                        {% set details = flight.get('arrival', {}) %}
+                        {% set airline = details.get('airlineOperator', {}) %}
+                        {% set arrival_time = details.get('arrivalTime', {}) %}
+                        {% set status = details.get('locationAndStatus', {}) %}
 
-            <tr>
-                <td>14:40</td>
-                <td>DY 805</td>
-                <td>Oslo</td>
-                <td>Norwegian</td>
-                <td><span class="status-ontime">On time</span></td>
-            </tr>
+                        <tr>
+                            <td>
+                                {{ arrival_time.get('scheduledUtc', 'N/A') }}
+                            </td>
 
-            <tr>
-                <td>15:10</td>
-                <td>LH 2414</td>
-                <td>Munich</td>
-                <td>Lufthansa</td>
-                <td><span class="status-delayed">Delayed</span></td>
-            </tr>
-        </tbody>
-    </table>
+                            <td>
+                                {{ details.get('flightId', 'N/A') }}
+                            </td>
 
-</section>
+                            <td>
+                                {{ details.get('departureAirportEnglish', 'Unknown') }}
+                            </td>
+
+                            <td>
+                                {{ airline.get('name', 'Unknown') }}
+                            </td>
+
+                            <td>
+                                {{ status.get('flightLegStatusEnglish', 'Unknown') }}
+                            </td>
+                        </tr>
+
+                    {% else %}
+                        <tr>
+                            <td colspan="5">
+                                No flight information available.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </section>
     </main>
 
     <footer>
