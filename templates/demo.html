@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatic Demo - Swedavia FlightInfo</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <header>
+        <h1>Swedavia FlightInfo</h1>
+        <p>Automatic Demonstration</p>
+        <a href="/">Back to Flights</a>
+    </header>
+
+    <main>
+        <section class="table-heading">
+            <h2>Automatic Demo</h2>
+            <p>Watch the application retrieve live flight information.</p>
+        </section>
+
+        <section class="odata-container">
+            <button id="start-button" onclick="startDemo()">
+                Start Demo
+            </button>
+
+            <button id="stop-button" onclick="stopDemo()" disabled>
+                Stop Demo
+            </button>
+
+            <p id="demo-status">Ready to start.</p>
+
+            <div id="demo-results"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Swedavia FlightInfo — Educational Project</p>
+    </footer>
+
+    <script>
+        let refreshTimer = null;
+        let stopped = true;
+
+        // Get the date in the Stockholm time zone
+        function stockholmDate(date) {
+            const parts = new Intl.DateTimeFormat("en-CA", {
+                timeZone: "Europe/Stockholm",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            }).formatToParts(date);
+
+            const values = {};
+
+            parts.forEach(part => {
+                values[part.type] = part.value;
+            });
+
+            return `${values.year}-${values.month}-${values.day}`;
+        }
+
+        // Format time in Stockholm local time
+        function stockholmTime(date) {
+            return new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Europe/Stockholm",
+                hour: "2-digit",
+                minute: "2-digit",
+                hourCycle: "h23"
+            }).format(date);
+        }
+
+        // Escape HTML values before displaying API data
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, char => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            })[char]);
+        }
+
+        // Load and filter flights for the selected time period
+        async function loadFlights(type, title, start, end) {
+            const dates = [...new Set([
+                stockholmDate(start),
+                stockholmDate(end)
+            ])];
+
+            let allFlights = [];
+
+            for (const date of dates) {
+                const response = await fetch(
+                    `/demo/data/${type}?date=${date}`
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.error || "Could not load flights"
+                    );
+                }
+
+                allFlights = allFlights.concat(data.flights || []);
+            }
+
+            const timeKey = type === "A"
+                ? "arrivalTime"
+                : "departureTime";
+
+            const upcoming = allFlights
+                .map(item => {
+                    const flight = item.arrival || item.departure;
+                    const scheduled = flight?.[timeKey]?.scheduledUtc;
+
+                    return {
+                        flight,
+                        scheduled: scheduled
+                            ? new Date(scheduled)
+                            : null
+                    };
+                })
+                .filter(item =>
+                    item.flight &&
+                    item.scheduled &&
+                    !isNaN(item.scheduled.getTime()) &&
+                    item.scheduled >= start &&
+                    item.scheduled <= end
+                )
+                .sort((a, b) => a.scheduled - b.scheduled);
+
+            let html = `
+                <h3>${title} — ${upcoming.length} flights</h3>
+            `;
+
+            if (upcoming.length === 0) {
+                html += `
+                    <p>No scheduled flights in this time period.</p>
+                `;
+            } else {
+                html += `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Flight</th>
+                                    <th>Airline</th>
+                                    <th>Destination / Origin</th>
+                                    <th>Scheduled</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                upcoming.forEach(item => {
+                    const flight = item.flight;
+
+                    const airport = type === "D"
+                        ? flight.arrivalAirportEnglish
+                        : flight.departureAirportEnglish;
+
+                    const status =
+                        flight.locationAndStatus
+                            ?.flightLegStatusEnglish || "N/A";
+
+                    html += `
+                        <tr>
+                            <td>${escapeHtml(flight.flightId || "N/A")}</td>
+                            <td>${escapeHtml(flight.airlineOperator?.name || "N/A")}</td>
+                            <td>${escapeHtml(airport || "N/A")}</td>
+                            <td>${stockholmTime(item.scheduled)}</td>
+                            <td>${escapeHtml(status)}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            return html;
+        }
+
+        // Refresh arrivals and departures
+        async function refreshDemo() {
+            if (stopped) return;
+
+            const status = document.getElementById("demo-status");
+            const results = document.getElementById("demo-results");
+
+            const now = new Date();
+
+            const end = new Date(
+                now.getTime() + 3 * 60 * 60 * 1000
+            );
+
+            status.textContent =
+                `Loading flights from ${stockholmTime(now)} to ${stockholmTime(end)}...`;
+
+            try {
+                const arrivals = await loadFlights(
+                    "A",
+                    "Upcoming Arrivals",
+                    now,
+                    end
+                );
+
+                if (stopped) return;
+
+                const departures = await loadFlights(
+                    "D",
+                    "Upcoming Departures",
+                    now,
+                    end
+                );
+
+                if (stopped) return;
+
+                results.innerHTML = arrivals + departures;
+
+                status.textContent =
+                    `Showing flights for the next 3 hours. Last updated: ${
+                        stockholmTime(new Date())
+                    }`;
+
+            } catch (error) {
+                status.textContent = "Error: " + error.message;
+            }
+        }
+
+        // Start the automatic demonstration
+        function startDemo() {
+            stopped = false;
+
+            document.getElementById("start-button").disabled = true;
+            document.getElementById("stop-button").disabled = false;
+
+            refreshDemo();
+
+            refreshTimer = setInterval(refreshDemo, 60000);
+        }
+
+        // Stop the automatic demonstration
+        function stopDemo() {
+            stopped = true;
+
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+
+            document.getElementById("demo-status").textContent =
+                "Demo stopped.";
+
+            document.getElementById("start-button").disabled = false;
+            document.getElementById("stop-button").disabled = true;
+        }
+    </script>
+</body>
+</html>

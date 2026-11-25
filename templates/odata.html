@@ -1,0 +1,295 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Flight Search - Swedavia FlightInfo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <header>
+        <h1>Swedavia FlightInfo</h1>
+        <p>Stockholm Arlanda Airport (ARN)</p>
+        <a href="/">Back to Flights</a>
+    </header>
+
+    <main>
+        <section class="table-heading">
+            <h2>Advanced Flight Search</h2>
+            <p>Find flights using different search options.</p>
+        </section>
+
+        <section class="odata-container">
+            <form id="search-form" method="POST" action="{{ url_for('odata') }}">
+                <label for="search-option">What would you like to find?</label>
+
+                <select id="search-option">
+                    <option value="departures">Departures from Arlanda</option>
+                    <option value="arrivals">Arrivals to Arlanda</option>
+                    <option value="flight">Search by flight number</option>
+                    <option value="other-departures">Departures from another Swedish airport</option>
+                    <option value="other-arrivals">Arrivals at another Swedish airport</option>
+                </select>
+
+                <div id="airport-group" style="display: none;">
+                    <label for="airport">Select Swedish airport:</label>
+
+                    <select id="airport">
+                        <option value="">Choose an airport</option>
+                        <option value="BMA">Bromma Stockholm (BMA)</option>
+                        <option value="GOT">Göteborg Landvetter (GOT)</option>
+                        <option value="MMX">Malmö (MMX)</option>
+                        <option value="LLA">Luleå (LLA)</option>
+                        <option value="UME">Umeå (UME)</option>
+                        <option value="OSD">Åre Östersund (OSD)</option>
+                        <option value="VBY">Visby (VBY)</option>
+                        <option value="RNB">Ronneby (RNB)</option>
+                        <option value="KRN">Kiruna (KRN)</option>
+                    </select>
+                </div>
+
+                <div id="flight-group" style="display: none;">
+                    <label for="flight-id">Flight number:</label>
+                    <input
+                        type="text"
+                        id="flight-id"
+                        placeholder="Example: SK1427"
+                    >
+                </div>
+
+                <label for="flight-date">Flight date:</label>
+                <input type="date" id="flight-date" required>
+
+                <label for="count">Maximum results (1–1000):</label>
+                <input
+                    type="number"
+                    id="count"
+                    name="count"
+                    min="1"
+                    max="1000"
+                    value="100"
+                    required
+                >
+
+                <!-- Hidden field containing the generated OData filter -->
+                <input type="hidden" id="filter" name="filter">
+
+                <button type="submit">Search Flights</button>
+            </form>
+
+            {% if error %}
+                <p class="error-message">Query error: {{ error }}</p>
+            {% endif %}
+
+            {% if result is not none %}
+                <section class="results-section">
+                    <h3>Flight Search Results</h3>
+
+                    {% set flights = result.get("flights", []) %}
+
+                    {% if flights %}
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Flight</th>
+                                        <th>Airline</th>
+                                        <th>From / To</th>
+                                        <th>Scheduled (Stockholm)</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for item in flights %}
+                                        {% set flight = item.get("departure") or item.get("arrival") %}
+                                        {% set is_departure = "departure" in item %}
+
+                                        {% if is_departure %}
+                                            {% set scheduled = flight.get("departureTime", {}).get("scheduledUtc") %}
+                                        {% else %}
+                                            {% set scheduled = flight.get("arrivalTime", {}).get("scheduledUtc") %}
+                                        {% endif %}
+
+                                        <tr>
+                                            <td>
+                                                {{ flight.get("flightId", "N/A") }}
+                                            </td>
+
+                                            <td>
+                                                {{ flight.get("airlineOperator", {}).get("name", "N/A") }}
+                                            </td>
+
+                                            <td>
+                                                {% if is_departure %}
+                                                    {{ flight.get("arrivalAirportEnglish", "N/A") }}
+                                                {% else %}
+                                                    {{ flight.get("departureAirportEnglish", "N/A") }}
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                <span data-utc="{{ scheduled or '' }}">
+                                                    {{ scheduled or "N/A" }}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                {{ flight.get("locationAndStatus", {}).get("flightLegStatusEnglish", "N/A") }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    {% else %}
+                        <p>No flights found for the selected search criteria.</p>
+                    {% endif %}
+                </section>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <p>Swedavia FlightInfo — Educational Project</p>
+    </footer>
+
+    <script>
+        const searchForm = document.getElementById("search-form");
+        const optionSelect = document.getElementById("search-option");
+        const airportInput = document.getElementById("airport");
+        const flightInput = document.getElementById("flight-id");
+        const dateInput = document.getElementById("flight-date");
+        const filterInput = document.getElementById("filter");
+
+        const airportGroup = document.getElementById("airport-group");
+        const flightGroup = document.getElementById("flight-group");
+
+        // Set today's date using the browser's local date.
+        const today = new Date();
+
+        const localDate = new Date(
+            today.getTime() - today.getTimezoneOffset() * 60000
+        ).toISOString().split("T")[0];
+
+        dateInput.value = localDate;
+
+        // Show the relevant fields depending on the selected search option.
+        function updateSearchForm() {
+            const option = optionSelect.value;
+
+            const isOtherAirport = option.includes("other-");
+            const isFlightSearch = option === "flight";
+
+            airportGroup.style.display = isOtherAirport ? "block" : "none";
+            flightGroup.style.display = isFlightSearch ? "block" : "none";
+
+            airportInput.required = isOtherAirport;
+            flightInput.required = isFlightSearch;
+
+            updateFilter();
+        }
+
+        // Generate the OData filter sent to Flask.
+        function updateFilter() {
+            const option = optionSelect.value;
+            const date = dateInput.value;
+
+            if (!date) {
+                filterInput.value = "";
+                return;
+            }
+
+            const dateParts = date.split("-");
+
+            const formattedDate =
+                dateParts[0].slice(2) + dateParts[1] + dateParts[2];
+
+            let airport = "ARN";
+            let flightType = "D";
+
+            if (option === "arrivals" || option === "other-arrivals") {
+                flightType = "A";
+            }
+
+            if (option.includes("other-")) {
+                airport = airportInput.value;
+
+                if (!airport) {
+                    filterInput.value = "";
+                    return;
+                }
+            }
+
+            let filter =
+                `airport eq '${airport}' and scheduled eq '${formattedDate}' and flightType eq '${flightType}'`;
+
+            if (option === "flight") {
+                const flightId = flightInput.value.trim().toUpperCase();
+
+                if (!flightId) {
+                    filterInput.value = "";
+                    return;
+                }
+
+                filter += ` and flightId eq '${flightId}'`;
+            }
+
+            filterInput.value = filter;
+        }
+
+        // Update the form when the search option changes.
+        optionSelect.addEventListener("change", updateSearchForm);
+
+        // Update the filter when the airport changes.
+        airportInput.addEventListener("change", updateFilter);
+
+        // Update the filter when the flight number changes.
+        flightInput.addEventListener("input", updateFilter);
+
+        // Update the filter when the date changes.
+        dateInput.addEventListener("change", updateFilter);
+
+        // Prevent submission if required search details are missing.
+        searchForm.addEventListener("submit", function(event) {
+            updateFilter();
+
+            if (!filterInput.value) {
+                event.preventDefault();
+                alert("Please complete all required search fields.");
+            }
+        });
+
+        // Initialize the form.
+        updateSearchForm();
+
+        // Convert UTC flight times to local Stockholm time.
+        document.querySelectorAll("[data-utc]").forEach(element => {
+            const utcTime = element.dataset.utc;
+
+            if (!utcTime) {
+                return;
+            }
+
+            const date = new Date(utcTime);
+
+            if (isNaN(date.getTime())) {
+                return;
+            }
+
+            element.textContent = new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Europe/Stockholm",
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hourCycle: "h23"
+            }).format(date);
+        });
+    </script>
+</body>
+</html>

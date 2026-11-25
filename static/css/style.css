@@ -505,3 +505,64 @@ main h2 {
         padding: 15px;
     }
 }
+
+/* OData Query Page */
+
+.odata-container {
+    max-width: 850px;
+    margin: 25px auto;
+    padding: 25px;
+    background-color: #17232e;
+    border: 1px solid #263746;
+    border-radius: 7px;
+}
+
+.odata-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.odata-container label {
+    color: #c5d0d8;
+    font-size: 14px;
+}
+
+.odata-container input {
+    padding: 12px 15px;
+    background-color: #101b25;
+    color: #ffffff;
+    border: 1px solid #344957;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.odata-container input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.odata-container button {
+    align-self: flex-start;
+    padding: 11px 20px;
+    background-color: #263746;
+    color: #ffffff;
+    border: 1px solid #344957;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.odata-container button:hover {
+    background-color: #3b82f6;
+}
+
+.odata-results {
+    padding: 18px;
+    background-color: #101b25;
+    color: #c5d0d8;
+    border-radius: 5px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}

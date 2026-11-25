@@ -1,18 +1,19 @@
 import json
 from pathlib import Path
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
+import uuid
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from services.swedavia_api import get_flights, check_heartbeat
+from services.swedavia_api import get_flights, check_heartbeat, query_flights
 
 
 app = Flask(__name__)
 
 PER_PAGE = 20
 DESTINATIONS_FILE = Path(__file__).parent / "data" / "city_country.json"
-
+ODATA_RESULTS = {}
 
 @app.route("/heartbeat")
 def heartbeat():
@@ -61,6 +62,68 @@ def destinations():
         total_countries=total_countries,
         error=error
     )
+
+@app.route("/odata", methods=["GET", "POST"])
+def odata():
+    if request.method == "POST":
+        filter_expression = request.form.get("filter", "").strip()
+        count = request.form.get("count", 100, type=int)
+
+        try:
+            result = query_flights(
+                filter_expression=filter_expression,
+                count=count
+            )
+            error = None
+
+        except Exception as e:
+            result = None
+            error = str(e)
+
+        result_id = uuid.uuid4().hex
+
+        ODATA_RESULTS[result_id] = {
+            "result": result,
+            "error": error,
+            "filter_expression": filter_expression,
+            "count": count
+        }
+
+        return redirect(url_for("odata", result_id=result_id))
+
+    result_id = request.args.get("result_id")
+    page_data = ODATA_RESULTS.get(result_id, {})
+
+    return render_template(
+        "odata.html",
+        result=page_data.get("result"),
+        error=page_data.get("error"),
+        filter_expression=page_data.get("filter_expression", ""),
+        count=page_data.get("count", 100)
+    )
+
+@app.route("/demo")
+def automatic_demo():
+    return render_template("demo.html")
+
+
+@app.route("/demo/data/<flight_type>")
+def demo_data(flight_type):
+    if flight_type not in ["A", "D"]:
+        return {"error": "Invalid flight type"}, 400
+
+    flight_date = request.args.get("date")
+
+    try:
+        data = get_flights(
+            airport="ARN",
+            flight_type=flight_type,
+            flight_date=flight_date
+        )
+        return data
+
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 
 @app.route("/")

@@ -102,3 +102,48 @@ def check_heartbeat():
         "available": response.ok,
         "status_code": response.status_code
     }
+
+def query_flights(filter_expression, count=100, continuation_token=None):
+    """
+    Search flights using an OData filter expression.
+
+    Supported filter fields include:
+    Airport, FlightType, Scheduled and FlightId.
+    """
+
+    api_key = os.getenv("SWEDAVIA_API_KEY")
+
+    if not api_key:
+        raise ValueError("Swedavia API key is missing.")
+
+    if not filter_expression or not filter_expression.strip():
+        raise ValueError("OData filter expression cannot be empty.")
+
+    if not 1 <= count <= 1000:
+        raise ValueError("Count must be between 1 and 1000.")
+
+    url = f"{API_URL}/query"
+
+    headers = {
+        "Ocp-Apim-Subscription-Key": api_key,
+        "Accept": "application/json"
+    }
+
+    params = {
+        "filter": filter_expression,
+        "count": count
+    }
+
+    if continuation_token:
+        params["continuationtoken"] = continuation_token
+
+    response = requests.get(
+        url,
+        headers=headers,
+        params=params,
+        timeout=30
+    )
+
+    response.raise_for_status()
+
+    return response.json()

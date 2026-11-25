@@ -1,11 +1,15 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Swedavia FlightInfo</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
 
     <header class="site-header">
@@ -22,17 +26,25 @@
 
     <nav class="main-nav">
         <a href="{{ url_for('home', type='A') }}"
-            class="{{ 'active' if flight_type == 'A' else '' }}">
+           class="{{ 'active' if flight_type == 'A' else '' }}">
             Arrivals
         </a>
 
         <a href="{{ url_for('home', type='D') }}"
-            class="{{ 'active' if flight_type == 'D' else '' }}">
+           class="{{ 'active' if flight_type == 'D' else '' }}">
             Departures
         </a>
 
         <a href="{{ url_for('destinations') }}">
             Destinations
+        </a>
+
+        <a href="{{ url_for('odata') }}">
+            Advanced Flight Search
+        </a>
+
+        <a href="{{ url_for('automatic_demo') }}">
+            Automatic Demo
         </a>
     </nav>
 
@@ -64,10 +76,28 @@
     <main>
         <h2>Flight Information</h2>
 
+        <!-- Automatic Demo information -->
+        <section class="table-heading">
+            <h2>Upcoming Flights</h2>
+
+            <p>
+                Want to see upcoming arrivals and departures?
+                Visit our Automatic Demo to explore the flight schedule
+                for the next three hours, updated every minute.
+            </p>
+
+            <a href="{{ url_for('automatic_demo') }}">
+                View the 3-Hour Flight Schedule
+            </a>
+        </section>
+
         <section class="flight-panel">
 
             <div class="table-heading">
-                <h3>{{ 'Arriving Flights' if flight_type == 'A' else 'Departing Flights' }}</h3>
+                <h3>
+                    {{ 'Arriving Flights' if flight_type == 'A' else 'Departing Flights' }}
+                </h3>
+
                 <span>LIVE DATA</span>
             </div>
 
@@ -112,7 +142,9 @@
                                 {% set status_class = 'status-unknown' %}
                             {% endif %}
 
-                            <td class="{{ status_class }}">{{ status_text }}</td>
+                            <td class="{{ status_class }}">
+                                {{ status_text }}
+                            </td>
                         </tr>
 
                     {% else %}
@@ -171,8 +203,11 @@
     </footer>
 
     <script>
-        const heartbeatButton = document.getElementById("heartbeat-button");
-        const heartbeatResult = document.getElementById("heartbeat-result");
+        const heartbeatButton =
+            document.getElementById("heartbeat-button");
+
+        const heartbeatResult =
+            document.getElementById("heartbeat-result");
 
         heartbeatButton.addEventListener("click", async () => {
             heartbeatButton.disabled = true;
@@ -187,12 +222,18 @@
                     heartbeatResult.textContent = "Connected";
                     heartbeatResult.className = "heartbeat-online";
                 } else {
-                    heartbeatResult.textContent = "Connection unavailable";
+                    heartbeatResult.textContent =
+                        "Connection unavailable";
+
                     heartbeatResult.className = "heartbeat-offline";
                 }
+
             } catch (error) {
-                heartbeatResult.textContent = "Connection unavailable";
+                heartbeatResult.textContent =
+                    "Connection unavailable";
+
                 heartbeatResult.className = "heartbeat-offline";
+
             } finally {
                 heartbeatButton.disabled = false;
             }
