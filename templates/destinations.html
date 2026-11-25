@@ -1,26 +1,67 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Destinations - Swedavia FlightInfo</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
-    <header>
-        <h1>Swedavia FlightInfo</h1>
-        <p>Stockholm Arlanda Airport (ARN)</p>
-        <a href="/">Back to Flights</a>
+
+    <header class="site-header">
+        <div class="logo">
+            <h1>SWEDAVIA</h1>
+            <span>FLIGHT INFORMATION</span>
+        </div>
+
+        <div class="airport-info">
+            <span>SWEDEN</span>
+            <h2>Stockholm Arlanda Airport</h2>
+        </div>
     </header>
 
+    <nav class="main-nav">
+        <a href="{{ url_for('home', type='A') }}">
+            Arrivals
+        </a>
+
+        <a href="{{ url_for('home', type='D') }}">
+            Departures
+        </a>
+
+        <a href="{{ url_for('destinations') }}" class="active">
+            Destinations
+        </a>
+
+        <a href="{{ url_for('odata') }}">
+            Advanced Flight Search
+        </a>
+
+        <a href="{{ url_for('automatic_demo') }}">
+            Automatic Demo
+        </a>
+    </nav>
+
     <main>
+
         {% if error %}
-            <p class="error-message">Unable to load destinations: {{ error }}</p>
+            <p class="error-message">
+                Unable to load destinations: {{ error }}
+            </p>
         {% else %}
+
             <section class="table-heading">
                 <h2>Destination Overview</h2>
-                <p>Explore destinations and countries served from Stockholm Arlanda Airport.</p>
+
+                <p>
+                    Explore destinations and countries served
+                    from Stockholm Arlanda Airport.
+                </p>
+
                 <p>Total destinations: {{ total_cities }}</p>
                 <p>Countries: {{ total_countries }}</p>
             </section>
@@ -31,27 +72,40 @@
                     id="country-search"
                     placeholder="Search for a country..."
                 >
-                <button type="button" id="clear-search">Clear</button>
+
+                <button type="button" id="clear-search">
+                    Clear
+                </button>
             </div>
 
             <div id="destination-list">
+
                 {% for country, cities in countries.items() %}
+
                     <section class="destination-country">
+
                         <h3>{{ country }}</h3>
+
                         <p>{{ cities | length }} destination(s)</p>
+
                         <ul>
                             {% for city in cities %}
                                 <li>{{ city }}</li>
                             {% endfor %}
                         </ul>
+
                     </section>
+
                 {% endfor %}
+
             </div>
 
             <p id="no-results" style="display: none;">
                 No countries found.
             </p>
+
         {% endif %}
+
     </main>
 
     <footer>
@@ -59,34 +113,52 @@
     </footer>
 
     <script>
-        const searchInput = document.getElementById("country-search");
-        const clearButton = document.getElementById("clear-search");
+        const searchInput =
+            document.getElementById("country-search");
 
-        clearButton.addEventListener("click", () => {
-            searchInput.value = "";
-            searchInput.dispatchEvent(new Event("input"));
-        });
+        const clearButton =
+            document.getElementById("clear-search");
 
-        const countrySections = document.querySelectorAll(".destination-country");
-        const noResults = document.getElementById("no-results");
+        const countrySections =
+            document.querySelectorAll(".destination-country");
 
-        searchInput.addEventListener("input", () => {
-            const searchValue = searchInput.value.toLowerCase().trim();
-            let visibleCountries = 0;
+        const noResults =
+            document.getElementById("no-results");
 
-            countrySections.forEach(section => {
-                const countryName = section.querySelector("h3").textContent.toLowerCase();
+        if (searchInput && clearButton && noResults) {
 
-                if (countryName.includes(searchValue)) {
-                    section.style.display = "";
-                    visibleCountries++;
-                } else {
-                    section.style.display = "none";
-                }
+            clearButton.addEventListener("click", () => {
+                searchInput.value = "";
+                searchInput.dispatchEvent(new Event("input"));
             });
 
-            noResults.style.display = visibleCountries === 0 ? "block" : "none";
-        });
+            searchInput.addEventListener("input", () => {
+
+                const searchValue =
+                    searchInput.value.toLowerCase().trim();
+
+                let visibleCountries = 0;
+
+                countrySections.forEach(section => {
+
+                    const countryName =
+                        section.querySelector("h3").textContent.toLowerCase();
+
+                    if (countryName.includes(searchValue)) {
+                        section.style.display = "";
+                        visibleCountries++;
+                    } else {
+                        section.style.display = "none";
+                    }
+
+                });
+
+                noResults.style.display =
+                    visibleCountries === 0 ? "block" : "none";
+
+            });
+        }
     </script>
+
 </body>
 </html>

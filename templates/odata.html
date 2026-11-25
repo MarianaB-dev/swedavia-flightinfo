@@ -1,19 +1,49 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Flight Search - Swedavia FlightInfo</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
-    <header>
-        <h1>Swedavia FlightInfo</h1>
-        <p>Stockholm Arlanda Airport (ARN)</p>
-        <a href="/">Back to Flights</a>
+
+    <header class="site-header">
+        <div class="logo">
+            <h1>SWEDAVIA</h1>
+            <span>FLIGHT INFORMATION</span>
+        </div>
+
+        <div class="airport-info">
+            <span>SWEDEN</span>
+            <h2>Stockholm Arlanda Airport</h2>
+        </div>
     </header>
+
+    <nav class="main-nav">
+        <a href="{{ url_for('home', type='A') }}">
+            Arrivals
+        </a>
+
+        <a href="{{ url_for('home', type='D') }}">
+            Departures
+        </a>
+
+        <a href="{{ url_for('destinations') }}">
+            Destinations
+        </a>
+
+        <a href="{{ url_for('odata') }}" class="active">
+            Advanced Flight Search
+        </a>
+
+        <a href="{{ url_for('automatic_demo') }}">
+            Automatic Demo
+        </a>
+    </nav>
 
     <main>
         <section class="table-heading">
@@ -291,5 +321,6 @@
             }).format(date);
         });
     </script>
+
 </body>
 </html>
