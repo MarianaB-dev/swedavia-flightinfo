@@ -566,3 +566,100 @@ main h2 {
     overflow-wrap: anywhere;
     font-size: 13px;
 }
+
+/* Automatic Demo - Flight Tables */
+
+#demo-results {
+    margin-top: 25px;
+}
+
+#demo-results h3 {
+    color: #ffffff;
+    font-size: 20px;
+    margin: 25px 0 15px;
+}
+
+#demo-results p {
+    color: #c5d0d8;
+    margin: 15px 0;
+}
+
+#demo-results .table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 30px;
+    border-radius: 6px;
+}
+
+#demo-results table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    background-color: #1b2b38;
+}
+
+#demo-results thead {
+    background-color: #263d4e;
+}
+
+#demo-results th {
+    padding: 15px 16px;
+    color: #f5b400;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+#demo-results td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #344957;
+    color: #e0e7ec;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+#demo-results tbody tr:hover {
+    background-color: #263d4e;
+}
+
+#demo-results tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Advanced Search - Select Fields */
+
+.odata-container select {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #101b25;
+    color: #ffffff;
+    border: 1px solid #344957;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.odata-container select:focus {
+    outline: none;
+    border-color: #f5b400;
+}
+
+.odata-container select option {
+    background-color: #17232e;
+    color: #ffffff;
+}
+
+/* Responsive Automatic Demo Tables */
+
+@media (max-width: 600px) {
+    #demo-results th,
+    #demo-results td {
+        padding: 11px 12px;
+        font-size: 12px;
+    }
+
+    #demo-results h3 {
+        font-size: 18px;
+    }
+}
