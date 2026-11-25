@@ -1,13 +1,66 @@
+import json
+from pathlib import Path
+
 from flask import Flask, render_template, request
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from services.swedavia_api import get_flights
+from services.swedavia_api import get_flights, check_heartbeat
 
 
 app = Flask(__name__)
 
 PER_PAGE = 20
+DESTINATIONS_FILE = Path(__file__).parent / "data" / "city_country.json"
+
+
+@app.route("/heartbeat")
+def heartbeat():
+    try:
+        result = check_heartbeat()
+        return result
+
+    except Exception as e:
+        return {
+            "available": False,
+            "error": str(e)
+        }, 500
+
+
+@app.route("/destinations")
+def destinations():
+    try:
+        with open(DESTINATIONS_FILE, encoding="utf-8") as file:
+            city_country = json.load(file)
+
+        countries = {}
+
+        for city, country in city_country.items():
+            countries.setdefault(country, []).append(city)
+
+        countries = dict(sorted(countries.items()))
+
+        for country in countries:
+            countries[country].sort()
+
+        total_cities = len(city_country)
+        total_countries = len(countries)
+
+        error = None
+
+    except (OSError, json.JSONDecodeError) as e:
+        countries = {}
+        total_cities = 0
+        total_countries = 0
+        error = str(e)
+
+    return render_template(
+        "destinations.html",
+        countries=countries,
+        total_cities=total_cities,
+        total_countries=total_countries,
+        error=error
+    )
 
 
 @app.route("/")
@@ -15,15 +68,17 @@ def home():
 
     flight_type = request.args.get("type", "A")
     search_query = request.args.get("flight", "").strip().upper()
-    
+
     page = request.args.get("page", 1, type=int)
     page = max(page, 1)
 
     if flight_type not in ["A", "D"]:
         flight_type = "A"
 
+    total_flights = 0
+    total_pages = 0
+
     try:
-        # Get flights from Stockholm Arlanda
         data = get_flights(
             airport="ARN",
             flight_type=flight_type,
@@ -32,7 +87,6 @@ def home():
 
         flights = data.get("flights", [])
 
-        # Convert flight times from UTC to Stockholm time
         stockholm_timezone = ZoneInfo("Europe/Stockholm")
 
         for flight in flights:
@@ -41,9 +95,12 @@ def home():
                 {}
             )
 
-            time_key = "arrivalTime" if flight_type == "A" else "departureTime"
-            flight_time = details.get(time_key, {})
+            time_key = (
+                "arrivalTime" if flight_type == "A"
+                else "departureTime"
+            )
 
+            flight_time = details.get(time_key, {})
             scheduled_utc = flight_time.get("scheduledUtc")
 
             if scheduled_utc:
@@ -65,7 +122,6 @@ def home():
             else:
                 flight_time["scheduledLocal"] = "N/A"
 
-        # Sort flights by scheduled UTC time
         def get_scheduled_time(flight):
             details = flight.get(
                 "arrival" if flight_type == "A" else "departure",
@@ -81,7 +137,7 @@ def home():
             return flight_time.get("scheduledUtc") or "9999"
 
         flights.sort(key=get_scheduled_time)
-        
+
         total_flights = len(flights)
         total_pages = (total_flights + PER_PAGE - 1) // PER_PAGE
 
@@ -91,7 +147,7 @@ def home():
         end = start + PER_PAGE
 
         flights = flights[start:end]
-        
+
         error = None
 
     except Exception as e:

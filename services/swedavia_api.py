@@ -74,3 +74,31 @@ def get_flights(airport="ARN", flight_type="A", flight_date=None, flight_id=None
         "flights": normalized_flights,
         "continuationtoken": data.get("continuationtoken")
     }
+
+def check_heartbeat():
+    """
+    Check the availability of the Swedavia FlightInfo API.
+    """
+
+    api_key = os.getenv("SWEDAVIA_API_KEY")
+
+    if not api_key:
+        raise ValueError("Swedavia API key is missing.")
+
+    url = f"{API_URL}/heartBeat"
+
+    headers = {
+        "Ocp-Apim-Subscription-Key": api_key,
+        "Accept": "application/json"
+    }
+
+    response = requests.get(
+        url,
+        headers=headers,
+        timeout=10
+    )
+
+    return {
+        "available": response.ok,
+        "status_code": response.status_code
+    }

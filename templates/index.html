@@ -30,6 +30,10 @@
             class="{{ 'active' if flight_type == 'D' else '' }}">
             Departures
         </a>
+
+        <a href="{{ url_for('destinations') }}">
+            Destinations
+        </a>
     </nav>
 
     <div class="search-container">
@@ -152,7 +156,48 @@
 
     <footer>
         <p>Swedavia FlightInfo — Educational Project</p>
+
+        <div class="heartbeat-container">
+            <span class="heartbeat-label">Flight data connection:</span>
+
+            <span id="heartbeat-result">
+                Not checked
+            </span>
+
+            <button type="button" id="heartbeat-button">
+                Check Connection
+            </button>
+        </div>
     </footer>
+
+    <script>
+        const heartbeatButton = document.getElementById("heartbeat-button");
+        const heartbeatResult = document.getElementById("heartbeat-result");
+
+        heartbeatButton.addEventListener("click", async () => {
+            heartbeatButton.disabled = true;
+            heartbeatResult.textContent = "Checking...";
+            heartbeatResult.className = "";
+
+            try {
+                const response = await fetch("/heartbeat");
+                const data = await response.json();
+
+                if (response.ok && data.available) {
+                    heartbeatResult.textContent = "Connected";
+                    heartbeatResult.className = "heartbeat-online";
+                } else {
+                    heartbeatResult.textContent = "Connection unavailable";
+                    heartbeatResult.className = "heartbeat-offline";
+                }
+            } catch (error) {
+                heartbeatResult.textContent = "Connection unavailable";
+                heartbeatResult.className = "heartbeat-offline";
+            } finally {
+                heartbeatButton.disabled = false;
+            }
+        });
+    </script>
 
 </body>
 </html>

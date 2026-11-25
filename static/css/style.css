@@ -361,3 +361,147 @@ main h2 {
         justify-content: space-between;
     }
 }
+
+/* API Heartbeat */
+
+.heartbeat-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    font-size: 13px;
+}
+
+.heartbeat-label {
+    color: #8999a5;
+}
+
+#heartbeat-button {
+    padding: 7px 12px;
+    background-color: #263746;
+    color: #c5d0d8;
+    border: 1px solid #344957;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s ease;
+}
+
+#heartbeat-button:hover:not(:disabled) {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+#heartbeat-button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+#heartbeat-result {
+    font-size: 13px;
+}
+
+.heartbeat-online {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+.heartbeat-offline {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+/* Destination Page */
+
+.destination-search {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    max-width: 600px;
+    margin: 25px auto;
+    padding: 0 20px;
+}
+
+.destination-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 15px;
+    background-color: #17232e;
+    color: #ffffff;
+    border: 1px solid #344957;
+    border-radius: 5px;
+    font-size: 14px;
+    outline: none;
+}
+
+.destination-search input:focus {
+    border-color: #3b82f6;
+}
+
+.destination-search button {
+    padding: 12px 18px;
+    background-color: #263746;
+    color: #c5d0d8;
+    border: 1px solid #344957;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s ease;
+}
+
+.destination-search button:hover {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+.destination-country {
+    max-width: 900px;
+    margin: 15px auto;
+    padding: 18px 22px;
+    background-color: #17232e;
+    border: 1px solid #263746;
+    border-radius: 7px;
+}
+
+.destination-country h3 {
+    margin: 0 0 8px;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+.destination-country p {
+    color: #8999a5;
+    font-size: 13px;
+}
+
+.destination-country ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 25px;
+    padding-left: 20px;
+    color: #c5d0d8;
+}
+
+#no-results {
+    text-align: center;
+    color: #8999a5;
+    margin: 30px;
+}
+
+@media (max-width: 600px) {
+    .destination-search {
+        padding: 0 12px;
+    }
+
+    .destination-search button {
+        padding: 12px;
+    }
+
+    .destination-country {
+        margin: 12px;
+        padding: 15px;
+    }
+}
