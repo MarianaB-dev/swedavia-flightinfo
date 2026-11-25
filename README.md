@@ -177,3 +177,17 @@ Completed as an educational project.
 
 GitHub: [MarianaB-dev](https://github.com/MarianaB-dev)
 
+
+## Screenshots
+
+### Main Page
+![Main Page](screenshots/main-page.png)
+
+### Destinations
+![Destinations](screenshots/destinations.png)
+
+### Advanced Flight Search
+![Advanced Flight Search](screenshots/advanced_flight_search.png)
+
+### Automatic Demo
+![Automatic Demo](screenshots/automatic_demo.png)
